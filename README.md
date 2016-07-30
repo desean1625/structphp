@@ -19,7 +19,8 @@ The module defines the following functions:
 
   CalcLength(fmt)
     Return the number of octets required to store the given format string.
- Format | C Type         |  Size (octets) | s
+```
+    Format | C Type         |  Size (octets) | s
     -------------------------------------------------------------------
        A   | char[]         |     Length     
        x   | pad byte       |        1      
@@ -35,7 +36,7 @@ The module defines the following functions:
        s   | char[]         |     Length     
        f   | float          |        4      
        d   | double         |        8       
-       
+```
 ```php
 require "Struct.php";
 $struct = new Struct();
