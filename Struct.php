@@ -8,29 +8,31 @@ class Struct
     public function __construct()
     {
 
-        $this->_elLut = array('A' => array('en' => array($this, '_EnArray'), 'de' => array($this, '_DeArray'), 'len'=>1),
-            's'                       => array('en' => array($this, '_EnString'), 'de' => array($this, '_DeString'), 'len'=>1),
-            'c'                       => array('en' => array($this, '_EnChar'), 'de' => array($this, '_DeChar'), 'len'=>1),
-            'b'                       => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 1, 'bSigned' => true, 'min' => -128, 'max' => 127),
-            'B'                       => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 1, 'bSigned' => false, 'min' => 0, 'max' => 255),
-            'h'                       => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 2, 'bSigned' => true, 'min' => -32768, 'max' => 32767),
-            'H'                       => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 2, 'bSigned' => false, 'min' => 0, 'max' => 65535),
-            'i'                       => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 4, 'bSigned' => true, 'min' => -2147483648, 'max' => 2147483647),
-            'I'                       => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 4, 'bSigned' => false, 'min' => 0, 'max' => 4294967295),
-            'l'                       => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 4, 'bSigned' => true, 'min' => -2147483648, 'max' => 2147483647),
-            'L'                       => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 4, 'bSigned' => false, 'min' => 0, 'max' => 4294967295),
-            'f'                       => array('en' => array($this, '_En754'), 'de' => array($this, '_De754'), 'len' => 4, 'mLen' => 23, 'rt' => 5.960464477539062e-8),
-            'd'                       => array('en' => array($this, '_En754'), 'de' => array($this, '_De754'), 'len' => 8, 'mLen' => 52, 'rt' => 0));
+        $this->_elLut = array(
+        	'x' => array('len' => 1),
+            'A' => array('en' => array($this, '_EnArray'), 'de' => array($this, '_DeArray'), 'len' => 1),
+            's' => array('en' => array($this, '_EnString'), 'de' => array($this, '_DeString'), 'len' => 1),
+            'c' => array('en' => array($this, '_EnChar'), 'de' => array($this, '_DeChar'), 'len' => 1),
+            'b' => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 1, 'bSigned' => true, 'min' => -128, 'max' => 127),
+            'B' => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 1, 'bSigned' => false, 'min' => 0, 'max' => 255),
+            'h' => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 2, 'bSigned' => true, 'min' => -32768, 'max' => 32767),
+            'H' => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 2, 'bSigned' => false, 'min' => 0, 'max' => 65535),
+            'i' => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 4, 'bSigned' => true, 'min' => -2147483648, 'max' => 2147483647),
+            'I' => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 4, 'bSigned' => false, 'min' => 0, 'max' => 4294967295),
+            'l' => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 4, 'bSigned' => true, 'min' => -2147483648, 'max' => 2147483647),
+            'L' => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 4, 'bSigned' => false, 'min' => 0, 'max' => 4294967295),
+            'f' => array('en' => array($this, '_En754'), 'de' => array($this, '_De754'), 'len' => 4, 'mLen' => 23, 'rt' => 5.960464477539062e-8),
+            'd' => array('en' => array($this, '_En754'), 'de' => array($this, '_De754'), 'len' => 8, 'mLen' => 52, 'rt' => 0));
 
     }
 
     // Pack the supplied values into a new octet array, according to the fmt string
     public function pack($fmt, $values)
     {
-    	$a = array_fill(0,$this->calcLength($fmt),null);
-    	$a = $this->PackTo($fmt, $a, 0, $values);
-    	array_unshift($a, "C*");
-    	return call_user_func_array('pack',$a);
+        $a = array_fill(0, $this->calcLength($fmt), null);
+        $a = $this->PackTo($fmt, $a, 0, $values);
+        array_unshift($a, "C*");
+        return call_user_func_array('pack', $a);
         //return pack($a;
     }
 
@@ -64,12 +66,19 @@ class Struct
                         $rv[] = $value;
                     }
                     break;
+                case 'x':
+                	$rv[] = null;
+                	break;
             }
             $p += $n * $s;
         }
         return $rv;
     }
 
+    public function calcsize($fmt)
+    {
+        return $this->calcLength($fmt);
+    }
     // Determine the number of bytes represented by the format string
     public function calcLength($fmt)
     {
@@ -82,7 +91,7 @@ class Struct
         }
 
         foreach ($matches as $key => $m) {
-            $sum += (($m[1] == null) || ($m[1] == '')) ? 1 : (Int) $m[1] * $this->_elLut[$m[2]]['len'];
+            $sum += (($m[1] == null) || ($m[1] == '')) ? $this->_elLut[$m[2]]['len'] : (Int) $m[1] * $this->_elLut[$m[2]]['len'];
         }
         return $sum;
     }
@@ -99,7 +108,7 @@ class Struct
     // ASCII characters
     private function _DeChar($a, $p)
     {
-        return char($a[$p]);
+        return chr($a[$p]);
     }
     // Little-endian (un)signed N-byte integers
     private function _DeInt($a, $p)
@@ -297,7 +306,7 @@ class Struct
         $fxn = $this->el['en'];
         $o   = 0;
         while ($o < $n) {
-           $a =  call_user_func($fxn, $a, $p + $o * $s, $v[$i + $o]);
+            $a = call_user_func($fxn, $a, $p + $o * $s, $v[$i + $o]);
             $o++;
         }
         return $a;
@@ -309,7 +318,7 @@ class Struct
         $this->bBE = ($fmt[0] != '<');
         preg_match_all($this->_sPattern, $fmt, $t);
         $matches = array();
-        $i = 0;
+        $i       = 0;
         foreach ($t[0] as $key => $value) {
             $matches[] = array($t[0][$key], $t[1][$key], $t[2][$key]);
         }
