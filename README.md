@@ -1,9 +1,9 @@
 # php-Struct
-Python Struct Port to PHP
+Python Struct Port to PHP for pack and unpack functions
 
 The module defines the following functions:
 
-  Unpack(fmt, a, p)
+  unpack(fmt, a, p)
     Return an array containing values unpacked from the octet array a,
   beginning at position p, according to the supplied format string.  If there
   are more octets in a than required by the format string, the excess is
@@ -11,14 +11,15 @@ The module defines the following functions:
   undefined.  If no value is supplied for the p argument, zero is assumed.
 
 
-  Pack(fmt, values)
+  pack(fmt, values)
     Return an octet array containing the packed values array.  If there are
   more values supplied than are specified in the format string, the excess is
   ignored.  If there are fewer values supplied, Pack() will return false.  If
   any value is of an inappropriate type, the results are undefined.
-
-  CalcLength(fmt)
-    Return the number of octets required to store the given format string.
+  calcsize(fmt)
+     Return the number of octets required to store the given format string.
+  calcLength(fmt)
+    same as calcsize
 ```
     Format | C Type         |  Size (octets) | s
     -------------------------------------------------------------------
