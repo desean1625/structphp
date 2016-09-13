@@ -9,7 +9,7 @@ class Struct
     {
 
         $this->_elLut = array(
-        	'x' => array('len' => 1),
+            'x' => array('len' => 1),
             'A' => array('en' => array($this, '_EnArray'), 'de' => array($this, '_DeArray'), 'len' => 1),
             's' => array('en' => array($this, '_EnString'), 'de' => array($this, '_DeString'), 'len' => 1),
             'c' => array('en' => array($this, '_EnChar'), 'de' => array($this, '_DeChar'), 'len' => 1),
@@ -31,7 +31,8 @@ class Struct
     {
         $a = array_fill(0, $this->calcLength($fmt), null);
         $a = $this->PackTo($fmt, $a, 0, $values);
-        array_unshift($a, "C*");
+        //array_unshift($a, "C*");
+        return $a;
         return call_user_func_array('pack', $a);
         //return pack($a;
     }
@@ -67,8 +68,8 @@ class Struct
                     }
                     break;
                 case 'x':
-                	$rv[] = null;
-                	break;
+                    $rv[] = null;
+                    break;
             }
             $p += $n * $s;
         }
@@ -224,7 +225,8 @@ class Struct
         //$t;
         $i = 0;
         while ($i < $l) {
-            $a[$p + $i] = ($t = chr($v[$i])) ? $t : 0;
+            //$a[$p + $i] = ($t = chr($v[$i])) ? $t : 0;
+            $a[$p + $i] = $v[$i];
             $i++;
         }
         return $a;
@@ -238,8 +240,8 @@ class Struct
 
         $s = $v < 0 ? 1 : 0;
         $v = abs($v);
-        if (is_numeric($v) || is_infinite($v)) {
-            $m = is_numeric($v) ? 1 : 0;
+        if (!is_numeric($v) || is_infinite($v)) {
+            $m = !is_numeric($v) ? 1 : 0;
             $e = $eMax;
         } else {
             $e = floor(log($v) / 0.6931471805599453); // Calculate log2 of the value
@@ -315,6 +317,7 @@ class Struct
     private function PackTo($fmt, $a, $p, $values)
     {
         // Set the private bBE flag based on the format string - assume big-endianness
+        $rv = "";
         $this->bBE = ($fmt[0] != '<');
         preg_match_all($this->_sPattern, $fmt, $t);
         $matches = array();
@@ -331,7 +334,9 @@ class Struct
             switch ($m[2]) {
                 case 'A':case 's':
                     if (($i + 1) > count($values)) {return false;}
-                    call_user_func($this->_elLut[$m[2]]['en'], $a, $p, $n, $values[$i]);
+                    $a = call_user_func($this->_elLut[$m[2]]['en'], $a, $p, $n, $values[$i]);
+                    $tmp = array_slice($a,$p,$n);
+                    $rv .= implode("",$tmp);
                     $i += 1;
                     break;
                 case 'c':case 'b':case 'B':case 'h':case 'H':
@@ -339,6 +344,9 @@ class Struct
                     $this->el = $this->_elLut[$m[2]];
                     if (($i + $n) > count($values)) {return false;}
                     $a = $this->_PackSeries($n, $s, $a, $p, $values, $i);
+                    $tmp = array_slice($a,$p,$s);
+                    array_unshift($tmp,"C*");
+                    $rv .= call_user_func_array("pack",$tmp);
                     $i += $n;
                     break;
                 case 'x':
@@ -351,6 +359,7 @@ class Struct
             }
             $p += $n * $s;
         }
+        return $rv;
         return $a;
     }
 }
