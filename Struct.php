@@ -347,7 +347,7 @@ class Struct
                 case 'x':
                     $j = 0;
                     while ($j < $n) {
-                        $a[$p + $j] = 0;
+                        $rv .= pack("x");
                         $j++;
                     }
                     break;
