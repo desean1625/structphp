@@ -31,10 +31,7 @@ class Struct
     {
         $a = array_fill(0, $this->calcLength($fmt), null);
         $a = $this->PackTo($fmt, $a, 0, $values);
-        //array_unshift($a, "C*");
         return $a;
-        return call_user_func_array('pack', $a);
-        //return pack($a;
     }
 
     public function unpack($fmt, $a, $p = 0)
@@ -222,10 +219,8 @@ class Struct
 
     private function _EnString($a, $p, $l, $v)
     {
-        //$t;
         $i = 0;
         while ($i < $l) {
-            //$a[$p + $i] = ($t = chr($v[$i])) ? $t : 0;
             $a[$p + $i] = $v[$i];
             $i++;
         }
@@ -360,6 +355,5 @@ class Struct
             $p += $n * $s;
         }
         return $rv;
-        return $a;
     }
 }
