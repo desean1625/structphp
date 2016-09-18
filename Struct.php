@@ -199,7 +199,7 @@ class Struct
     }
     private function _EnChar($a, $p, $v)
     {
-        $a[$p] = $v[0];
+        $a[$p] = ord($v[0]);
         return $a;
     }
     private function _EnInt($a, $p, $v)
