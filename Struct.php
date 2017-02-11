@@ -184,8 +184,9 @@ class Struct
     {
         $highIndex = !$this->bBE ? 4 : 0;
         $lowIndex  = !$this->bBE ? 0 : 4;
-        $high = $this->_DeInt($a, $highIndex);
-        $low  = $this->_DeInt($a, $lowIndex);
+        $this->el  = $this->_elLut["i"];
+        $high      = $this->_DeInt($a, $highIndex);
+        $low       = $this->_DeInt($a, $lowIndex);
         return ($low + $this->pow2(32) * $high);
     }
     /**
