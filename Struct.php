@@ -1,8 +1,17 @@
 <?php
 class Struct
 {
-    private $_sPattern = '/(\\d+)?([AxcbBhHsfdiIlL])/';
+    /**
+     * @var string
+     */
+    private $_sPattern = '/(\\d+)?([AxcbBhHsfdiIlLq])/';
+    /**
+     * @var mixed
+     */
     private $el;
+    /**
+     * @var mixed
+     */
     private $bBE = false;
 
     public function __construct()
@@ -22,11 +31,17 @@ class Struct
             'l' => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 4, 'bSigned' => true, 'min' => -2147483648, 'max' => 2147483647),
             'L' => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 4, 'bSigned' => false, 'min' => 0, 'max' => 4294967295),
             'f' => array('en' => array($this, '_En754'), 'de' => array($this, '_De754'), 'len' => 4, 'mLen' => 23, 'rt' => 5.960464477539062e-8),
-            'd' => array('en' => array($this, '_En754'), 'de' => array($this, '_De754'), 'len' => 8, 'mLen' => 52, 'rt' => 0));
+            'd' => array('en' => array($this, '_En754'), 'de' => array($this, '_De754'), 'len' => 8, 'mLen' => 52, 'rt' => 0),
+            'q' => array('en' => array($this, '_EnInt64'), 'de' => array($this, '_DeInt64'), 'len' => 8, 'bSigned' => true));
 
     }
 
     // Pack the supplied values into a new octet array, according to the fmt string
+    /**
+     * @param $fmt
+     * @param $values
+     * @return mixed
+     */
     public function pack($fmt, $values)
     {
         $a = array_fill(0, $this->calcLength($fmt), null);
@@ -34,11 +49,20 @@ class Struct
         return $a;
     }
 
-    public function unpack($fmt, $a, $p = 0)
+    /**
+     * @param $fmt
+     * @param $a
+     * @param $p
+     * @param $byteArray
+     * @return mixed
+     */
+    public function unpack($fmt, $a, $p = 0, $byteArray = false)
     {
-        $a = unpack('C*', $a);
-        array_unshift($a, 0);
-        array_shift($a);
+        if (!$byteArray) {
+            $a = unpack('C*', $a);
+            array_unshift($a, 0);
+            array_shift($a);
+        }
         $this->bBE = ($fmt[0] != '<');
         preg_match_all($this->_sPattern, $fmt, $t);
         $matches = array();
@@ -50,15 +74,16 @@ class Struct
             $n = (($m[1] == null) || ($m[1] == '')) ? 1 : (int) $m[1];
             $s = $this->_elLut[$m[2]]['len'];
             if (($p + $n * $s) > count($a)) {
-                return null;
+                return $rv;
             }
+
             switch ($m[2]) {
                 case 'A':case 's':
                     $rv[] = call_user_func($this->_elLut[$m[2]]['de'], $a, $p, $n);
                     break;
 
                 case 'c':case 'b':case 'B':case 'h':case 'H':
-                case 'i':case 'I':case 'l':case 'L':case 'f':case 'd':
+                case 'i':case 'I':case 'l':case 'L':case 'f':case 'd':case 'q':
                     $this->el = $this->_elLut[$m[2]];
                     foreach ($this->_UnpackSeries($n, $s, $a, $p) as $key => $value) {
                         $rv[] = $value;
@@ -73,11 +98,19 @@ class Struct
         return $rv;
     }
 
+    /**
+     * @param $fmt
+     * @return mixed
+     */
     public function calcsize($fmt)
     {
         return $this->calcLength($fmt);
     }
     // Determine the number of bytes represented by the format string
+    /**
+     * @param $fmt
+     * @return mixed
+     */
     public function calcLength($fmt)
     {
         $sum = 0;
@@ -97,18 +130,32 @@ class Struct
     /*Unpack functions
     /****************************************/
     // Raw byte arrays
+    /**
+     * @param $a
+     * @param $p
+     * @param $l
+     * @return mixed
+     */
     private function _DeArray($a, $p, $l)
     {
-        echo $p . " " . $l;
         $rv = array_slice($a, $p, $p + $l);
         return $rv;
     }
     // ASCII characters
+    /**
+     * @param $a
+     * @param $p
+     */
     private function _DeChar($a, $p)
     {
         return chr($a[$p]);
     }
     // Little-endian (un)signed N-byte integers
+    /**
+     * @param $a
+     * @param $p
+     * @return mixed
+     */
     private function _DeInt($a, $p)
     {
         //$a = array_reverse ($a);
@@ -128,7 +175,33 @@ class Struct
         }
         return $rv;
     }
+    // Little-endian (un)signed N-byte integers
+    /**
+     * @param $a
+     * @param $p
+     */
+    private function _DeInt64($a, $p)
+    {
+        $highIndex = !$this->bBE ? 4 : 0;
+        $lowIndex  = !$this->bBE ? 0 : 4;
+        $high = $this->_DeInt($a, $highIndex);
+        $low  = $this->_DeInt($a, $lowIndex);
+        return ($low + $this->pow2(32) * $high);
+    }
+    /**
+     * @param $n
+     */
+    private function pow2($n)
+    {
+        return ($n >= 0 && $n < 31) ? (1 << $n) : pow(2, $n);
+    }
     // ASCII character strings
+    /**
+     * @param $a
+     * @param $p
+     * @param $l
+     * @return mixed
+     */
     private function _DeString($a, $p, $l)
     {
         $rv = '';
@@ -140,6 +213,11 @@ class Struct
         return $rv;
     }
     // Little-endian N-bit IEEE 754 floating point
+    /**
+     * @param $a
+     * @param $p
+     * @return mixed
+     */
     private function _De754($a, $p)
     {
         $mLen  = $this->el['mLen'];
@@ -188,6 +266,13 @@ class Struct
 
     /*Pack functions
     /****************************************/
+    /**
+     * @param $a
+     * @param $p
+     * @param $l
+     * @param $v
+     * @return mixed
+     */
     private function _EnArray($a, $p, $l, $v)
     {
         $i = 0;
@@ -197,11 +282,23 @@ class Struct
         }
         return $a;
     }
+    /**
+     * @param $a
+     * @param $p
+     * @param $v
+     * @return mixed
+     */
     private function _EnChar($a, $p, $v)
     {
         $a[$p] = ord($v[0]);
         return $a;
     }
+    /**
+     * @param $a
+     * @param $p
+     * @param $v
+     * @return mixed
+     */
     private function _EnInt($a, $p, $v)
     {
         $lsb  = $this->bBE ? ($this->el['len'] - 1) : 0;
@@ -217,6 +314,13 @@ class Struct
         return $a;
     }
 
+    /**
+     * @param $a
+     * @param $p
+     * @param $l
+     * @param $v
+     * @return mixed
+     */
     private function _EnString($a, $p, $l, $v)
     {
         $i = 0;
@@ -226,6 +330,12 @@ class Struct
         }
         return $a;
     }
+    /**
+     * @param $a
+     * @param $p
+     * @param $v
+     * @return mixed
+     */
     private function _En754($a, $p, $v)
     {
         $mLen  = $this->el['mLen'];
@@ -285,8 +395,16 @@ class Struct
         return $a;
     }
 
+    /**
+     * @param $n
+     * @param $s
+     * @param $a
+     * @param $p
+     * @return mixed
+     */
     private function _UnpackSeries($n, $s, $a, $p)
     {
+
         $fxn = $this->el['de'];
         $rv  = array();
         $i   = 0;
@@ -298,6 +416,15 @@ class Struct
     }
 
     // Pack a series of n elements of size s from array v at offset i to array a at offset p with fxn
+    /**
+     * @param $n
+     * @param $s
+     * @param $a
+     * @param $p
+     * @param $v
+     * @param $i
+     * @return mixed
+     */
     private function _PackSeries($n, $s, $a, $p, $v, $i)
     {
         $fxn = $this->el['en'];
@@ -309,10 +436,17 @@ class Struct
         return $a;
     }
     // Pack the supplied values into the octet array a, beginning at offset p, according to the fmt string
+    /**
+     * @param $fmt
+     * @param $a
+     * @param $p
+     * @param $values
+     * @return mixed
+     */
     private function PackTo($fmt, $a, $p, $values)
     {
         // Set the private bBE flag based on the format string - assume big-endianness
-        $rv = "";
+        $rv        = "";
         $this->bBE = ($fmt[0] != '<');
         preg_match_all($this->_sPattern, $fmt, $t);
         $matches = array();
@@ -329,19 +463,19 @@ class Struct
             switch ($m[2]) {
                 case 'A':case 's':
                     if (($i + 1) > count($values)) {return false;}
-                    $a = call_user_func($this->_elLut[$m[2]]['en'], $a, $p, $n, $values[$i]);
-                    $tmp = array_slice($a,$p,$n);
-                    $rv .= implode("",$tmp);
+                    $a   = call_user_func($this->_elLut[$m[2]]['en'], $a, $p, $n, $values[$i]);
+                    $tmp = array_slice($a, $p, $n);
+                    $rv .= implode("", $tmp);
                     $i += 1;
                     break;
                 case 'c':case 'b':case 'B':case 'h':case 'H':
                 case 'i':case 'I':case 'l':case 'L':case 'f':case 'd':
                     $this->el = $this->_elLut[$m[2]];
                     if (($i + $n) > count($values)) {return false;}
-                    $a = $this->_PackSeries($n, $s, $a, $p, $values, $i);
-                    $tmp = array_slice($a,$p,$s);
-                    array_unshift($tmp,"C*");
-                    $rv .= call_user_func_array("pack",$tmp);
+                    $a   = $this->_PackSeries($n, $s, $a, $p, $values, $i);
+                    $tmp = array_slice($a, $p, $s);
+                    array_unshift($tmp, "C*");
+                    $rv .= call_user_func_array("pack", $tmp);
                     $i += $n;
                     break;
                 case 'x':
