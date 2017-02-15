@@ -32,7 +32,9 @@ class Struct
             'L' => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 4, 'bSigned' => false, 'min' => 0, 'max' => 4294967295),
             'f' => array('en' => array($this, '_En754'), 'de' => array($this, '_De754'), 'len' => 4, 'mLen' => 23, 'rt' => 5.960464477539062e-8),
             'd' => array('en' => array($this, '_En754'), 'de' => array($this, '_De754'), 'len' => 8, 'mLen' => 52, 'rt' => 0),
-            'q' => array('en' => array($this, '_EnInt64'), 'de' => array($this, '_DeInt64'), 'len' => 8, 'bSigned' => true));
+            'q' => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 8, 'bSigned' => true, 'min' => -pow(2, 63), 'max' => pow(2, 63)),
+            'Q' => array('en' => array($this, '_EnInt'), 'de' => array($this, '_DeInt'), 'len' => 8, 'bSigned' => false, 'min' => 0, 'max' => pow(2, 64)),
+        );
 
     }
 
@@ -175,27 +177,7 @@ class Struct
         }
         return $rv;
     }
-    // Little-endian (un)signed N-byte integers
-    /**
-     * @param $a
-     * @param $p
-     */
-    private function _DeInt64($a, $p)
-    {
-        $highIndex = !$this->bBE ? 4 : 0;
-        $lowIndex  = !$this->bBE ? 0 : 4;
-        $this->el  = $this->_elLut["i"];
-        $high      = $this->_DeInt($a, $highIndex);
-        $low       = $this->_DeInt($a, $lowIndex);
-        return ($low + $this->pow2(32) * $high);
-    }
-    /**
-     * @param $n
-     */
-    private function pow2($n)
-    {
-        return ($n >= 0 && $n < 31) ? (1 << $n) : pow(2, $n);
-    }
+
     // ASCII character strings
     /**
      * @param $a
