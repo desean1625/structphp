@@ -1,5 +1,11 @@
-# Structphp
+# structphp
 Python Struct Port to PHP for pack and unpack functions
+
+## Install
+composer require desean1625/structphp
+
+
+
 
 The module defines the following functions:
 
