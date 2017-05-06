@@ -1,4 +1,5 @@
 <?php
+namespace Desean1625;
 class Struct
 {
     /**
