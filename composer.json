@@ -1,5 +1,5 @@
 {
-    "name": "desean1625/Structphp",
+    "name": "desean1625/structphp",
     "description": "A port of python struct module to php",
     "require": {
         "php": "^5.3.3 || ^7.0"
