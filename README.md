@@ -1,4 +1,4 @@
-# php-Struct
+# Structphp
 Python Struct Port to PHP for pack and unpack functions
 
 The module defines the following functions:
