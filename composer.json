@@ -1,0 +1,7 @@
+{
+    "name": "Structphp",
+    "description": "A port of python struct module to php",
+    "require": {
+        "php": "^5.3.3 || ^7.0"
+    }
+}
