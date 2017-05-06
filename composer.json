@@ -3,5 +3,10 @@
     "description": "A port of python struct module to php",
     "require": {
         "php": "^5.3.3 || ^7.0"
+    },
+     "autoload": {
+        "psr-4": {
+            "Desean1625\\": ""
+        }
     }
 }
