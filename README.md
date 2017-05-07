@@ -45,8 +45,8 @@ The module defines the following functions:
        d   | double         |        8       
 ```
 ```php
-require "Struct.php";
-$struct = new Struct();
+require "./vendor/audoload.php";
+$struct = new Desean1625\Struct();
 
  print_r($struct->unpack("<2h", pack("v2", 10, 10)));//v	unsigned short (always 16 bit, little endian byte order)
  print_r($struct->unpack(">2h", pack("n2", 10, 10)));//n	unsigned short (always 16 bit, big endian byte order)
